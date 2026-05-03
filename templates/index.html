@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园二手交易平台 - 数据库系统</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --success: #0d904f;
+            --danger: #d93025;
+            --warning: #e6a817;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #202124;
+            --text-secondary: #5f6368;
+            --border: #dadce0;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+            --radius: 10px;
+            --transition: 0.2s ease;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        /* 导航栏 */
+        .navbar {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            height: 60px;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 8px;
+        }
+        .navbar .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-right: 24px;
+            white-space: nowrap;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .navbar .logo .icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .navbar a.nav-link {
+            text-decoration: none;
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .navbar a.nav-link:hover,
+        .navbar a.nav-link.active {
+            background: #e8f0fe;
+            color: var(--primary);
+        }
+        .navbar a.nav-link.active {
+            font-weight: 600;
+            background: #d2e3fc;
+        }
+        /* 主容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 20px;
+        }
+        /* 卡片 */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card h2 .badge {
+            font-size: 0.8rem;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        .card h3 {
+            font-size: 1.05rem;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+        /* 统计卡片网格 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-card .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        /* 表格 */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 600px;
+        }
+        table thead th {
+            background: #f1f3f4;
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        table tbody td {
+            padding: 11px 14px;
+            border-bottom: 1px solid #f1f3f4;
+            vertical-align: middle;
+        }
+        table tbody tr {
+            transition: var(--transition);
+        }
+        table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        .status-sold {
+            background: #fce8e6;
+            color: #c62828;
+        }
+        .status-available {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        /* 按钮 */
+        .btn {
+            display: inline-block;
+            padding: 9px 18px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+        }
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #0b7a3e;
+            box-shadow: 0 2px 8px rgba(13, 144, 79, 0.3);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #b3261e;
+            box-shadow: 0 2px 8px rgba(217, 48, 37, 0.3);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #e8f0fe;
+        }
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 0.78rem;
+            border-radius: 14px;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        /* 表单 */
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            background: #fff;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .form-row .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        /* 提示信息 */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+        .alert-error {
+            background: #fce8e6;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+        .alert-info {
+            background: #e3f2fd;
+            color: #0d47a1;
+            border: 1px solid #90caf9;
+        }
+        /* 高亮行 */
+        .highlight-row {
+            background: #fffde7 !important;
+        }
+        /* 分隔线 */
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 20px 0;
+        }
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 12px;
+                gap: 2px;
+                overflow-x: auto;
+            }
+            .navbar a.nav-link {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+            .navbar .logo {
+                font-size: 1rem;
+                margin-right: 8px;
+            }
+            .container {
+                padding: 12px 8px;
+            }
+            .card {
+                padding: 16px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            .stat-card {
+                padding: 14px;
+            }
+            .stat-card .stat-value {
+                font-size: 1.4rem;
+            }
+        }
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 16px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        code {
+            background: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <span class="icon">🎓</span> 校园二手交易
+        </a>
+        <a href="/" class="nav-link active" id="nav-home">🏠 首页</a>
+        <a href="/items" class="nav-link" id="nav-items">📦 商品列表</a>
+        <a href="/users" class="nav-link" id="nav-users">👥 用户列表</a>
+        <a href="/orders" class="nav-link" id="nav-orders">📋 订单列表</a>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="container">
+        <!-- Flash消息 -->
+        <div id="flash-messages"></div>
+
+        <!-- 首页内容 -->
+        <div id="page-home">
+            <div class="card">
+                <h2>🎓 欢迎使用校园二手交易平台</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 8px;">
+                    本系统是一个完整的<strong>数据库应用演示项目</strong>，基于 Flask + SQLite 构建，部署于 Vercel 云平台。
+                </p>
+                <p style="color: var(--text-secondary);">
+                    支持商品浏览、用户管理、订单追踪等功能，涵盖基本查询、连接查询、聚合统计、视图、事务处理等数据库核心技术。
+                </p>
+            </div>
+
+            <!-- 统计卡片 -->
+            <div class="stats-grid" id="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-total-items">-</div>
+                    <div class="stat-label">📦 商品总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-avg-price">-</div>
+                    <div class="stat-label">💰 平均价格 (元)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-total-users">-</div>
+                    <div class="stat-label">👥 注册用户</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-total-orders">-</div>
+                    <div class="stat-label">📋 订单总数</div>
+                </div>
+            </div>
+
+            <!-- 分类统计 -->
+            <div class="card">
+                <h2>📊 每类商品数量统计</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>商品类别</th><th>商品数量</th></tr>
+                        </thead>
+                        <tbody id="category-stats-table">
+                            <tr><td colspan="2" style="text-align:center;color:#999;">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 发布最多用户 -->
+            <div class="card">
+                <h2>🏆 发布商品数量最多的用户</h2>
+                <div id="top-seller-info" style="color: var(--text-secondary);">加载中...</div>
+            </div>
+
+            <!-- 视图展示 -->
+            <div class="card">
+                <h2>👁️ 数据库视图 (Views)</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h3>📗 已售商品视图 <span class="badge">SoldItemsView</span></h3>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>商品名</th><th>买家ID</th><th>订单日期</th></tr></thead>
+                                <tbody id="view-sold-table">
+                                    <tr><td colspan="3" style="text-align:center;color:#999;">暂无已售商品</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div>
+                        <h3>📕 未售商品视图 <span class="badge">UnsoldItemsView</span></h3>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>商品ID</th><th>商品名</th><th>类别</th><th>价格</th></tr></thead>
+                                <tbody id="view-unsold-table">
+                                    <tr><td colspan="4" style="text-align:center;color:#999;">加载中...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 安全性 & 并发说明 -->
+            <div class="card">
+                <h2>🔒 安全性 & 并发与恢复</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h3>🛡️ 安全性说明</h3>
+                        <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:8px;">
+                            <strong>1. 防止普通用户删除数据：</strong>采用<code>应用层权限控制</code>，删除操作需通过严格的前置条件校验（如仅允许删除status=0的商品），且在实际生产环境中可结合用户认证（JWT/Session）限制DELETE操作的访问权限。
+                        </p>
+                        <p style="font-size:0.88rem;color:var(--text-secondary);">
+                            <strong>2. 限制用户只能查询数据：</strong>通过<code>数据库用户权限分级</code>实现——创建只读数据库用户（GRANT SELECT），应用程序使用该只读账户连接数据库，仅管理员使用具备写权限的账户。
+                        </p>
+                    </div>
+                    <div>
+                        <h3>⚡ 并发与恢复</h3>
+                        <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:8px;">
+                            <strong>1. 并发购买问题：</strong>两个用户同时购买同一商品可能导致<code>脏读/丢失更新</code>——双方都读取到status=0，都尝试插入订单，导致一个商品被卖出两次。
+                        </p>
+                        <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:8px;">
+                            <strong>2. 解决方案：</strong>使用<code>数据库事务 + 行级锁</code>（SELECT ... FOR UPDATE），在事务中先锁定商品行，检查status，再执行插入和更新，确保原子性。
+                        </p>
+                        <p style="font-size:0.88rem;color:var(--text-secondary);">
+                            <strong>3. 崩溃恢复：</strong>利用数据库的<code>WAL日志</code>（Write-Ahead Logging）和<code>定期备份</code>机制。系统崩溃后，通过重放WAL日志恢复已提交的事务，回滚未完成的事务，保证数据一致性。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商品列表页 -->
+        <div id="page-items" style="display:none;">
+            <div class="card">
+                <h2>📦 商品列表</h2>
+                <!-- 筛选按钮 -->
+                <div class="btn-group" style="margin-bottom:12px;">
+                    <button class="btn btn-outline btn-sm" onclick="filterItems('all')">📋 全部商品</button>
+                    <button class="btn btn-outline btn-sm" onclick="filterItems('unsold')">🟢 未售出商品</button>
+                    <button class="btn btn-outline btn-sm" onclick="filterItems('price_gt_30')">💰 价格 &gt; 30</button>
+                    <button class="btn btn-outline btn-sm" onclick="filterItems('dailygoods')">🧴 生活用品类</button>
+                    <button class="btn btn-outline btn-sm" onclick="filterItems('seller_u001')">👤 u001 发布的商品</button>
+                </div>
+                <div id="items-filter-label" style="font-size:0.85rem;color:var(--primary);font-weight:600;margin-bottom:8px;">
+                    当前筛选：全部商品
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>商品ID</th><th>商品名称</th><th>类别</th><th>价格 (元)</th>
+                                <th>状态</th><th>卖家ID</th><th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-table-body">
+                            <tr><td colspan="7" style="text-align:center;color:#999;">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 操作区 -->
+            <div class="card">
+                <h2>🔧 商品操作</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- 新增商品 -->
+                    <div>
+                        <h3>➕ 新增商品</h3>
+                        <form id="form-add-item" onsubmit="addItem(event)">
+                            <div class="form-row">
+                                <div class="form-group"><label>商品ID</label><input type="text" id="add-item-id" placeholder="如 i006" required></div>
+                                <div class="form-group"><label>商品名称</label><input type="text" id="add-item-name" placeholder="商品名称" required></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>类别</label><input type="text" id="add-item-category" placeholder="如 Electronics" required></div>
+                                <div class="form-group"><label>价格 (元)</label><input type="number" id="add-item-price" placeholder="0" step="0.01" min="0" required></div>
+                            </div>
+                            <div class="form-group"><label>卖家ID</label>
+                                <select id="add-item-seller" required>
+                                    <option value="">请选择卖家</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">✅ 新增商品</button>
+                        </form>
+                    </div>
+                    <!-- 修改价格 & 删除 & 购买 -->
+                    <div>
+                        <h3>✏️ 修改商品价格</h3>
+                        <form id="form-update-price" onsubmit="updatePrice(event)">
+                            <div class="form-row">
+                                <div class="form-group"><label>商品ID</label>
+                                    <select id="update-item-id" required>
+                                        <option value="">请选择商品</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>新价格 (元)</label><input type="number" id="update-item-price" placeholder="新价格" step="0.01" min="0" required></div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">💾 修改价格</button>
+                        </form>
+                        <hr class="divider">
+                        <h3>🗑️ 删除未售出商品</h3>
+                        <form id="form-delete-item" onsubmit="deleteItem(event)">
+                            <div class="form-group"><label>商品ID（仅限未售出）</label>
+                                <select id="delete-item-id" required>
+                                    <option value="">请选择未售出商品</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-danger">⚠️ 删除商品</button>
+                        </form>
+                        <hr class="divider">
+                        <h3>🛒 购买商品</h3>
+                        <form id="form-buy-item" onsubmit="buyItem(event)">
+                            <div class="form-row">
+                                <div class="form-group"><label>商品ID</label>
+                                    <select id="buy-item-id" required>
+                                        <option value="">请选择未售出商品</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>买家ID</label>
+                                    <select id="buy-buyer-id" required>
+                                        <option value="">请选择买家</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success">🛍️ 确认购买</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户列表页 -->
+        <div id="page-users" style="display:none;">
+            <div class="card">
+                <h2>👥 用户列表</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>用户ID</th><th>姓名</th><th>手机号</th><th>发布商品数</th></tr></thead>
+                        <tbody id="users-table-body">
+                            <tr><td colspan="4" style="text-align:center;color:#999;">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 订单列表页 -->
+        <div id="page-orders" style="display:none;">
+            <!-- 所有订单 -->
+            <div class="card">
+                <h2>📋 所有订单</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>订单ID</th><th>商品ID</th><th>买家ID</th><th>订单日期</th></tr></thead>
+                        <tbody id="orders-table-body">
+                            <tr><td colspan="4" style="text-align:center;color:#999;">暂无订单记录</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- 连接查询：已售商品+买家姓名 -->
+            <div class="card">
+                <h2>🔗 已售商品及其买家姓名 <span class="badge">连接查询1</span></h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>商品名称</th><th>买家姓名</th><th>订单日期</th><th>成交价格 (元)</th></tr></thead>
+                        <tbody id="sold-with-buyer-table">
+                            <tr><td colspan="4" style="text-align:center;color:#999;">暂无已售商品</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- 连接查询：卖家u001商品购买情况 -->
+            <div class="card">
+                <h2>🔍 卖家 u001 的商品是否被购买 <span class="badge">连接查询3</span></h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>商品ID</th><th>商品名称</th><th>价格 (元)</th><th>是否已售出</th><th>买家姓名</th></tr></thead>
+                        <tbody id="u001-items-status-table">
+                            <tr><td colspan="5" style="text-align:center;color:#999;">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="footer">
+        <p>校园二手交易平台数据库系统 | Flask + SQLite | Deployed on Vercel</p>
+        <p style="font-size:0.75rem;">数据库大作业 © 2026</p>
+    </div>
+
+    <script>
+        // ==================== 导航切换 ====================
+        const pages = { home: 'page-home', items: 'page-items', users: 'page-users', orders: 'page-orders' };
+        const navLinks = { home: 'nav-home', items: 'nav-items', users: 'nav-users', orders: 'nav-orders' };
+
+        function navigateTo(page) {
+            Object.values(pages).forEach(id => document.getElementById(id).style.display = 'none');
+            Object.values(navLinks).forEach(id => document.getElementById(id).classList.remove('active'));
+            document.getElementById(pages[page]).style.display = 'block';
+            document.getElementById(navLinks[page]).classList.add('active');
+            if (page === 'home') loadHomeData();
+            if (page === 'items') { loadItems('all');
+                loadItemFormOptions(); }
+            if (page === 'users') loadUsers();
+            if (page === 'orders') loadOrdersData();
+            window.location.hash = page;
+        }
+
+        // 根据URL hash初始化页面
+        function initPageFromHash() {
+            const hash = window.location.hash.replace('#', '');
+            const validPages = ['home', 'items', 'users', 'orders'];
+            const page = validPages.includes(hash) ? hash : 'home';
+            navigateTo(page);
+        }
+
+        // 点击导航链接
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const href = this.getAttribute('href').replace('/', '');
+                const page = href === '' ? 'home' : href;
+                navigateTo(page);
+            });
+        });
+
+        // ==================== Flash消息 ====================
+        function showFlash(msg, type = 'info') {
+            const container = document.getElementById('flash-messages');
+            const cls = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-error' : 'alert-info';
+            container.innerHTML = `<div class="alert ${cls}">${msg}</div>`;
+            setTimeout(() => { container.innerHTML = ''; }, 4000);
+        }
+
+        // ==================== API调用 ====================
+        async function apiCall(url, options = {}) {
+            try {
+                const resp = await fetch(url, {
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                    ...options
+                });
+                const data = await resp.json();
+                if (!data.success) {
+                    showFlash('❌ ' + (data.error || '操作失败'), 'error');
+                }
+                return data;
+            } catch (err) {
+                showFlash('❌ 网络错误: ' + err.message, 'error');
+                return { success: false, error: err.message };
+            }
+        }
+
+        // ==================== 首页数据 ====================
+        async function loadHomeData() {
+            // 统计
+            const statsResp = await apiCall('/api/stats');
+            if (statsResp.success) {
+                document.getElementById('stat-total-items').textContent = statsResp.data.total_items;
+                document.getElementById('stat-avg-price').textContent = '¥' + parseFloat(statsResp.data.avg_price).toFixed(2);
+                document.getElementById('stat-total-users').textContent = statsResp.data.total_users;
+                document.getElementById('stat-total-orders').textContent = statsResp.data.total_orders;
+                // 分类统计
+                const catTbody = document.getElementById('category-stats-table');
+                if (statsResp.data.category_counts && statsResp.data.category_counts.length > 0) {
+                    catTbody.innerHTML = statsResp.data.category_counts.map(
+                        c => `<tr><td>${c.category}</td><td><strong>${c.count}</strong> 件</td></tr>`
+                    ).join('');
+                } else {
+                    catTbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#999;">暂无数据</td></tr>';
+                }
+                // 发布最多用户
+                const topDiv = document.getElementById('top-seller-info');
+                if (statsResp.data.top_seller && statsResp.data.top_seller.length > 0) {
+                    topDiv.innerHTML = statsResp.data.top_seller.map(
+                        u => `<p>👤 <strong>${u.user_name}</strong> (ID: ${u.user_id}) — 发布了 <strong>${u.item_count}</strong> 件商品</p>`
+                    ).join('');
+                } else {
+                    topDiv.innerHTML = '<p>暂无数据</p>';
+                }
+            }
+            // 视图
+            const viewSoldResp = await apiCall('/api/view/sold');
+            const soldTbody = document.getElementById('view-sold-table');
+            if (viewSoldResp.success && viewSoldResp.data.length > 0) {
+                soldTbody.innerHTML = viewSoldResp.data.map(
+                    r => `<tr><td>${r.item_name}</td><td>${r.buyer_id}</td><td>${r.order_date || '-'}</td></tr>`
+                ).join('');
+            } else {
+                soldTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#999;">暂无已售商品</td></tr>';
+            }
+            const viewUnsoldResp = await apiCall('/api/view/unsold');
+            const unsoldTbody = document.getElementById('view-unsold-table');
+            if (viewUnsoldResp.success && viewUnsoldResp.data.length > 0) {
+                unsoldTbody.innerHTML = viewUnsoldResp.data.map(
+                    r => `<tr><td><code>${r.item_id}</code></td><td>${r.item_name}</td><td>${r.category}</td><td>¥${parseFloat(r.price).toFixed(2)}</td></tr>`
+                ).join('');
+            } else {
+                unsoldTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;">暂无未售商品</td></tr>';
+            }
+        }
+
+        // ==================== 商品列表 ====================
+        async function loadItems(filter = 'all') {
+            const labelMap = {
+                'all': '全部商品',
+                'unsold': '未售出商品 (status=0)',
+                'price_gt_30': '价格大于30元的商品',
+                'dailygoods': '生活用品类 (DailyGoods)',
+                'seller_u001': 'u001 发布的所有商品'
+            };
+            document.getElementById('items-filter-label').textContent = '当前筛选：' + (labelMap[filter] || filter);
+            const resp = await apiCall(`/api/items?filter=${filter}`);
+            const tbody = document.getElementById('items-table-body');
+            if (resp.success && resp.data.length > 0) {
+                tbody.innerHTML = resp.data.map(item => `
+                    <tr>
+                        <td><code>${item.item_id}</code></td>
+                        <td><strong>${item.item_name}</strong></td>
+                        <td>${item.category}</td>
+                        <td>¥${parseFloat(item.price).toFixed(2)}</td>
+                        <td><span class="status-badge ${item.status == 1 ? 'status-sold' : 'status-available'}">${item.status == 1 ? '已售出' : '未售出'}</span></td>
+                        <td><code>${item.seller_id}</code></td>
+                        <td>${item.status == 0 ? `<button class="btn btn-sm btn-success" onclick="quickBuy('${item.item_id}')">🛒购买</button>` : '<span style="color:#999;">已售</span>'}</td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;">暂无匹配的商品</td></tr>';
+            }
+        }
+
+        function filterItems(filter) { loadItems(filter); }
+
+        async function quickBuy(itemId) {
+            const buyerId = prompt(`请输入购买【${itemId}】的买家ID（如 u002）：`);
+            if (!buyerId) return;
+            const resp = await apiCall('/api/buy', {
+                method: 'POST',
+                body: JSON.stringify({ item_id: itemId, buyer_id: buyerId })
+            });
+            if (resp.success) {
+                showFlash('✅ ' + resp.message, 'success');
+                loadItems(document.getElementById('items-filter-label').textContent.includes('未售出') ? 'unsold' : 'all');
+                if (document.getElementById('page-orders').style.display !== 'none') loadOrdersData();
+                if (document.getElementById('page-home').style.display !== 'none') loadHomeData();
+            }
+        }
+
+        async function loadItemFormOptions() {
+            // 加载用户列表到下拉框
+            const usersResp = await apiCall('/api/users');
+            let userOptions = '';
+            if (usersResp.success && usersResp.data.length > 0) {
+                userOptions = usersResp.data.map(u => `<option value="${u.user_id}">${u.user_id} - ${u.user_name}</option>`).join('');
+            }
+            document.getElementById('add-item-seller').innerHTML = '<option value="">请选择卖家</option>' + userOptions;
+            document.getElementById('buy-buyer-id').innerHTML = '<option value="">请选择买家</option>' + userOptions;
+            // 加载商品到下拉框
+            const itemsResp = await apiCall('/api/items?filter=all');
+            let itemOptionsAll = '';
+            let itemOptionsUnsold = '';
+            let itemOptionsDelete = '';
+            if (itemsResp.success && itemsResp.data.length > 0) {
+                itemOptionsAll = itemsResp.data.map(i => `<option value="${i.item_id}">${i.item_id} - ${i.item_name} (¥${parseFloat(i.price).toFixed(2)})</option>`).join('');
+                itemOptionsUnsold = itemsResp.data.filter(i => i.status == 0).map(i => `<option value="${i.item_id}">${i.item_id} - ${i.item_name} (¥${parseFloat(i.price).toFixed(2)})</option>`).join('');
+                itemOptionsDelete = itemsResp.data.filter(i => i.status == 0).map(i => `<option value="${i.item_id}">${i.item_id} - ${i.item_name}</option>`).join('');
+            }
+            document.getElementById('update-item-id').innerHTML = '<option value="">请选择商品</option>' + itemOptionsAll;
+            document.getElementById('buy-item-id').innerHTML = '<option value="">请选择未售出商品</option>' + (itemOptionsUnsold || '<option value="">暂无可购买商品</option>');
+            document.getElementById('delete-item-id').innerHTML = '<option value="">请选择未售出商品</option>' + (itemOptionsDelete || '<option value="">暂无可删除商品</option>');
+        }
+
+        async function addItem(e) {
+            e.preventDefault();
+            const data = {
+                item_id: document.getElementById('add-item-id').value.trim(),
+                item_name: document.getElementById('add-item-name').value.trim(),
+                category: document.getElementById('add-item-category').value.trim(),
+                price: parseFloat(document.getElementById('add-item-price').value),
+                seller_id: document.getElementById('add-item-seller').value
+            };
+            if (!data.item_id || !data.item_name || !data.category || isNaN(data.price) || !data.seller_id) {
+                showFlash('❌ 请填写所有必填字段', 'error');
+                return;
+            }
+            const resp = await apiCall('/api/items/add', { method: 'POST', body: JSON.stringify(data) });
+            if (resp.success) {
+                showFlash('✅ ' + resp.message, 'success');
+                document.getElementById('form-add-item').reset();
+                loadItems('all');
+                loadItemFormOptions();
+                if (document.getElementById('page-home').style.display !== 'none') loadHomeData();
+            }
+        }
+
+        async function updatePrice(e) {
+            e.preventDefault();
+            const itemId = document.getElementById('update-item-id').value;
+            const newPrice = parseFloat(document.getElementById('update-item-price').value);
+            if (!itemId || isNaN(newPrice)) {
+                showFlash('❌ 请选择商品并输入有效价格', 'error');
+                return;
+            }
+            const resp = await apiCall('/api/items/update-price', { method: 'POST', body: JSON.stringify({ item_id: itemId,
+                    price: newPrice }) });
+            if (resp.success) {
+                showFlash('✅ ' + resp.message, 'success');
+                document.getElementById('form-update-price').reset();
+                loadItems('all');
+                loadItemFormOptions();
+                if (document.getElementById('page-home').style.display !== 'none') loadHomeData();
+            }
+        }
+
+        async function deleteItem(e) {
+            e.preventDefault();
+            const itemId = document.getElementById('delete-item-id').value;
+            if (!itemId) { showFlash('❌ 请选择要删除的商品', 'error'); return; }
+            if (!confirm(`确定要删除商品 ${itemId} 吗？此操作不可恢复！`)) return;
+            const resp = await apiCall('/api/items/delete', { method: 'POST', body: JSON.stringify({ item_id: itemId }) });
+            if (resp.success) {
+                showFlash('✅ ' + resp.message, 'success');
+                document.getElementById('form-delete-item').reset();
+                loadItems('all');
+                loadItemFormOptions();
+                if (document.getElementById('page-home').style.display !== 'none') loadHomeData();
+            }
+        }
+
+        async function buyItem(e) {
+            e.preventDefault();
+            const itemId = document.getElementById('buy-item-id').value;
+            const buyerId = document.getElementById('buy-buyer-id').value;
+            if (!itemId || !buyerId) { showFlash('❌ 请选择商品和买家', 'error'); return; }
+            const resp = await apiCall('/api/buy', { method: 'POST', body: JSON.stringify({ item_id: itemId,
+                    buyer_id: buyerId }) });
+            if (resp.success) {
+                showFlash('✅ ' + resp.message, 'success');
+                document.getElementById('form-buy-item').reset();
+                loadItems('all');
+                loadItemFormOptions();
+                if (document.getElementById('page-home').style.display !== 'none') loadHomeData();
+                if (document.getElementById('page-orders').style.display !== 'none') loadOrdersData();
+            }
+        }
+
+        // ==================== 用户列表 ====================
+        async function loadUsers() {
+            const resp = await apiCall('/api/users');
+            const tbody = document.getElementById('users-table-body');
+            if (resp.success && resp.data.length > 0) {
+                tbody.innerHTML = resp.data.map(u => `
+                    <tr>
+                        <td><code>${u.user_id}</code></td>
+                        <td><strong>${u.user_name}</strong></td>
+                        <td>${u.phone}</td>
+                        <td>${u.item_count || 0} 件</td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;">暂无用户数据</td></tr>';
+            }
+        }
+
+        // ==================== 订单数据 ====================
+        async function loadOrdersData() {
+            // 所有订单
+            const ordersResp = await apiCall('/api/orders');
+            const ordersTbody = document.getElementById('orders-table-body');
+            if (ordersResp.success && ordersResp.data.length > 0) {
+                ordersTbody.innerHTML = ordersResp.data.map(o => `
+                    <tr>
+                        <td><code>${o.order_id}</code></td>
+                        <td><code>${o.item_id}</code></td>
+                        <td><code>${o.buyer_id}</code></td>
+                        <td>${o.order_date}</td>
+                    </tr>
+                `).join('');
+            } else {
+                ordersTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;">暂无订单记录</td></tr>';
+            }
+            // 已售商品+买家姓名
+            const soldBuyerResp = await apiCall('/api/orders/sold-with-buyer');
+            const sbTbody = document.getElementById('sold-with-buyer-table');
+            if (soldBuyerResp.success && soldBuyerResp.data.length > 0) {
+                sbTbody.innerHTML = soldBuyerResp.data.map(r => `
+                    <tr>
+                        <td><strong>${r.item_name}</strong></td>
+                        <td>${r.buyer_name}</td>
+                        <td>${r.order_date}</td>
+                        <td>¥${parseFloat(r.price).toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            } else {
+                sbTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;">暂无已售商品</td></tr>';
+            }
+            // u001商品购买情况
+            const u001Resp = await apiCall('/api/orders/u001-items-status');
+            const u001Tbody = document.getElementById('u001-items-status-table');
+            if (u001Resp.success && u001Resp.data.length > 0) {
+                u001Tbody.innerHTML = u001Resp.data.map(r => `
+                    <tr class="${r.is_sold ? 'highlight-row' : ''}">
+                        <td><code>${r.item_id}</code></td>
+                        <td>${r.item_name}</td>
+                        <td>¥${parseFloat(r.price).toFixed(2)}</td>
+                        <td><span class="status-badge ${r.is_sold ? 'status-sold' : 'status-available'}">${r.is_sold ? '已售出' : '未售出'}</span></td>
+                        <td>${r.buyer_name || '<em style="color:#999;">-</em>'}</td>
+                    </tr>
+                `).join('');
+            } else {
+                u001Tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;">加载中...</td></tr>';
+            }
+        }
+
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            initPageFromHash();
+            // 监听浏览器前进后退
+            window.addEventListener('hashchange', initPageFromHash);
+        });
+    </script>
+</body>
+</html>
